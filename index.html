@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instr-Iso — Play Your AI Song</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://js.stripe.com/v3/"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #080808; --bg2: #0f0f0f; --surface: #141414; --surface2: #1c1c1c;
+  --border: #242424; --border2: #2e2e2e;
+  --gold: #c9a84c; --gold2: #e8c97a; --gold-dim: rgba(201,168,76,0.12);
+  --amber: #d4820a; --text: #f2ede4; --text2: #a09880; --muted: #5a5248;
+  --guitar: #c9a84c; --bass: #7b9ccc; --piano: #9b8ec4;
+  --drums: #c97a5a; --violin: #7aba8a; --banjo: #c4a87a;
+  --r: 10px;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; font-weight: 300; min-height: 100vh; overflow-x: hidden; }
+body::after { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events:none; z-index:9999; }
+
+nav { position:fixed; top:0; left:0; right:0; z-index:500; padding:0 48px; height:68px; display:flex; align-items:center; justify-content:space-between; background:rgba(8,8,8,0.94); backdrop-filter:blur(16px); border-bottom:1px solid var(--border); }
+.nav-logo { font-family:'Playfair Display',serif; font-size:22px; font-weight:900; color:var(--gold); letter-spacing:1px; cursor:pointer; }
+.nav-logo span { color:var(--text2); font-weight:400; font-style:italic; }
+.nav-links { display:flex; align-items:center; gap:28px; }
+.nav-link { background:none; border:none; color:var(--text2); font-family:'Barlow Condensed',sans-serif; font-size:13px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:color .2s; }
+.nav-link:hover { color:var(--text); }
+.nav-cta { background:var(--gold); color:#000; padding:9px 22px; border-radius:4px; font-family:'Barlow Condensed',sans-serif; font-size:13px; letter-spacing:2px; text-transform:uppercase; font-weight:600; cursor:pointer; border:none; transition:background .2s; }
+.nav-cta:hover { background:var(--gold2); }
+
+.page { display:none; } .page.active { display:block; }
+
+#page-landing { padding-top:68px; }
+.hero { min-height:92vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:80px 40px 60px; position:relative; overflow:hidden; }
+.hero-bg { position:absolute; inset:0; background: radial-gradient(ellipse 60% 50% at 50% 60%, rgba(201,168,76,0.08) 0%, transparent 70%), radial-gradient(ellipse 40% 30% at 20% 80%, rgba(212,130,10,0.05) 0%, transparent 60%); }
+.hero-eyebrow { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--gold); margin-bottom:28px; opacity:0; animation:fadeUp .8s ease forwards .2s; }
+.hero-headline { font-family:'Playfair Display',serif; font-size:clamp(48px,8vw,96px); font-weight:900; line-height:1.0; color:var(--text); margin-bottom:12px; opacity:0; animation:fadeUp .8s ease forwards .4s; }
+.hero-headline em { font-style:italic; color:var(--gold); }
+.hero-sub { font-size:clamp(16px,2.5vw,21px); color:var(--text2); max-width:560px; line-height:1.65; margin:24px auto 44px; font-weight:300; opacity:0; animation:fadeUp .8s ease forwards .6s; }
+.hero-actions { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; opacity:0; animation:fadeUp .8s ease forwards .8s; }
+.btn-primary { background:var(--gold); color:#000; padding:16px 36px; border-radius:4px; font-family:'Barlow Condensed',sans-serif; font-size:15px; letter-spacing:2px; text-transform:uppercase; font-weight:700; cursor:pointer; border:none; transition:all .2s; }
+.btn-primary:hover { background:var(--gold2); transform:translateY(-2px); }
+.btn-ghost { background:none; color:var(--text2); padding:16px 36px; border-radius:4px; border:1px solid var(--border2); font-family:'Barlow Condensed',sans-serif; font-size:15px; letter-spacing:2px; text-transform:uppercase; font-weight:600; cursor:pointer; transition:all .2s; }
+.btn-ghost:hover { border-color:var(--gold); color:var(--gold); }
+.scroll-hint { position:absolute; bottom:36px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:8px; opacity:0; animation:fadeUp 1s ease forwards 1.2s; }
+.scroll-hint span { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:3px; color:var(--muted); text-transform:uppercase; }
+.scroll-arrow { width:20px; height:20px; border-right:1px solid var(--muted); border-bottom:1px solid var(--muted); transform:rotate(45deg); animation:bounce 2s ease infinite; }
+@keyframes bounce { 0%,100%{transform:rotate(45deg) translateY(0)} 50%{transform:rotate(45deg) translateY(5px)} }
+
+.section { padding:100px 48px; max-width:1100px; margin:0 auto; }
+.sec-label { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--gold); margin-bottom:20px; }
+.sec-title { font-family:'Playfair Display',serif; font-size:clamp(32px,4vw,52px); font-weight:700; line-height:1.1; margin-bottom:16px; }
+.sec-title em { font-style:italic; color:var(--gold); }
+
+.steps-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2px; margin-top:56px; background:var(--border); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; }
+.step { background:var(--surface); padding:36px 28px; }
+.step-num { font-family:'Playfair Display',serif; font-size:56px; font-weight:900; color:var(--border2); line-height:1; margin-bottom:20px; }
+.step-title { font-family:'Barlow Condensed',sans-serif; font-size:18px; letter-spacing:1px; text-transform:uppercase; font-weight:600; color:var(--text); margin-bottom:10px; }
+.step-desc { font-size:14px; color:var(--text2); line-height:1.6; }
+
+.instr-showcase { padding:80px 48px; background:var(--bg2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+.instr-inner { max-width:1100px; margin:0 auto; }
+.instr-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin-top:48px; }
+.instr-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:24px 16px; text-align:center; transition:all .25s; }
+.instr-card:hover { transform:translateY(-4px); }
+.instr-icon { font-size:32px; margin-bottom:10px; }
+.instr-name { font-family:'Barlow Condensed',sans-serif; font-size:13px; letter-spacing:2px; text-transform:uppercase; font-weight:600; }
+
+.pricing-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-top:56px; }
+.price-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:32px 20px; position:relative; transition:border-color .2s; }
+.price-card:hover { border-color:var(--border2); }
+.price-card.featured { border-color:var(--gold); background:linear-gradient(160deg,rgba(201,168,76,0.08) 0%,var(--surface) 60%); }
+.price-badge { position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:var(--gold); color:#000; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; padding:4px 12px; border-radius:20px; white-space:nowrap; }
+.price-tier { font-family:'Barlow Condensed',sans-serif; font-size:12px; letter-spacing:3px; text-transform:uppercase; color:var(--text2); margin-bottom:16px; }
+.price-amount { font-family:'Playfair Display',serif; font-size:36px; font-weight:700; color:var(--text); line-height:1; margin-bottom:4px; }
+.price-amount sup { font-size:18px; vertical-align:top; margin-top:6px; display:inline-block; }
+.price-period { font-size:12px; color:var(--muted); font-family:'DM Mono',monospace; margin-bottom:24px; }
+.price-features { list-style:none; margin-bottom:28px; }
+.price-features li { font-size:13px; color:var(--text2); padding:6px 0; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+.price-features li::before { content:'—'; color:var(--gold); font-size:12px; }
+.price-btn { width:100%; padding:12px; border-radius:4px; font-family:'Barlow Condensed',sans-serif; font-size:13px; letter-spacing:2px; text-transform:uppercase; font-weight:600; cursor:pointer; border:1px solid var(--border2); background:none; color:var(--text2); transition:all .2s; }
+.price-btn:hover { border-color:var(--gold); color:var(--gold); }
+.price-btn.gold { background:var(--gold); color:#000; border-color:var(--gold); }
+.price-btn.gold:hover { background:var(--gold2); }
+
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.88); backdrop-filter:blur(10px); z-index:800; display:none; align-items:center; justify-content:center; padding:20px; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--surface); border:1px solid var(--border2); border-radius:12px; padding:48px 40px; width:100%; max-width:420px; position:relative; }
+.modal-close { position:absolute; top:16px; right:20px; background:none; border:none; color:var(--muted); font-size:22px; cursor:pointer; }
+.modal-close:hover { color:var(--text); }
+.modal-logo { font-family:'Playfair Display',serif; font-size:24px; font-weight:900; color:var(--gold); margin-bottom:8px; }
+.modal-title { font-family:'Barlow Condensed',sans-serif; font-size:13px; letter-spacing:3px; text-transform:uppercase; color:var(--text2); margin-bottom:36px; }
+.google-btn { width:100%; padding:14px; background:#fff; color:#333; border:none; border-radius:6px; font-family:'Barlow',sans-serif; font-size:14px; font-weight:500; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:20px; transition:background .2s; }
+.google-btn:hover { background:#f5f5f5; }
+.divider { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+.divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
+.divider span { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); letter-spacing:2px; }
+.form-field { margin-bottom:14px; }
+.form-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; display:block; }
+.form-input { width:100%; background:var(--bg2); border:1px solid var(--border2); border-radius:6px; padding:12px 14px; color:var(--text); font-family:'Barlow',sans-serif; font-size:14px; outline:none; transition:border-color .2s; }
+.form-input:focus { border-color:var(--gold); }
+.form-submit { width:100%; padding:14px; background:var(--gold); color:#000; border:none; border-radius:6px; font-family:'Barlow Condensed',sans-serif; font-size:14px; letter-spacing:2px; text-transform:uppercase; font-weight:700; cursor:pointer; margin-top:8px; transition:background .2s; }
+.form-submit:hover { background:var(--gold2); }
+.modal-switch { text-align:center; margin-top:20px; font-size:13px; color:var(--muted); }
+.modal-switch a { color:var(--gold); cursor:pointer; }
+.modal-error { background:rgba(220,50,50,0.1); border:1px solid rgba(220,50,50,0.3); border-radius:6px; padding:10px 14px; font-size:13px; color:#e07070; margin-bottom:16px; display:none; }
+.modal-error.show { display:block; }
+.modal-success { background:rgba(50,180,100,0.1); border:1px solid rgba(50,180,100,0.3); border-radius:6px; padding:10px 14px; font-size:13px; color:#70d4a0; margin-bottom:16px; display:none; }
+.modal-success.show { display:block; }
+
+#page-app { padding-top:68px; }
+.app-layout { display:grid; grid-template-columns:280px 1fr; min-height:calc(100vh - 68px); }
+.sidebar { background:var(--bg2); border-right:1px solid var(--border); padding:32px 24px; position:sticky; top:68px; height:calc(100vh - 68px); overflow-y:auto; display:flex; flex-direction:column; }
+.sidebar-greeting { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-bottom:4px; }
+.sidebar-user { font-family:'Barlow Condensed',sans-serif; font-size:16px; letter-spacing:1px; color:var(--text); margin-bottom:32px; padding-bottom:24px; border-bottom:1px solid var(--border); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sidebar-sec { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
+.song-list { flex:1; }
+.song-item { padding:12px 14px; border-radius:6px; cursor:pointer; transition:background .15s; margin-bottom:4px; }
+.song-item:hover { background:var(--surface); }
+.song-item-title { font-size:13px; color:var(--text); margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.song-item-meta { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:1px; }
+.sidebar-bottom { border-top:1px solid var(--border); padding-top:20px; margin-top:20px; }
+.plan-badge { display:inline-block; background:var(--gold-dim); border:1px solid rgba(201,168,76,0.3); color:var(--gold); font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; padding:4px 10px; border-radius:20px; margin-bottom:8px; }
+.songs-remaining { font-size:12px; color:var(--text2); margin-bottom:16px; }
+.upgrade-btn { width:100%; padding:10px; background:none; border:1px solid var(--gold); color:var(--gold); border-radius:4px; font-family:'Barlow Condensed',sans-serif; font-size:12px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:all .2s; }
+.upgrade-btn:hover { background:var(--gold); color:#000; }
+
+.app-main { padding:40px 48px; }
+.analysis-form { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:36px; margin-bottom:32px; }
+.form-title { font-family:'Barlow Condensed',sans-serif; font-size:20px; letter-spacing:2px; text-transform:uppercase; color:var(--text); margin-bottom:28px; display:flex; align-items:center; gap:12px; }
+.form-title::after { content:''; flex:1; height:1px; background:var(--border); }
+.method-tabs { display:flex; gap:2px; background:var(--bg2); padding:4px; border-radius:6px; margin-bottom:20px; width:fit-content; }
+.method-tab { background:none; border:none; color:var(--muted); font-family:'DM Mono',monospace; font-size:11px; letter-spacing:1px; padding:8px 18px; cursor:pointer; border-radius:4px; transition:all .2s; }
+.method-tab.active { background:var(--surface2); color:var(--text); }
+.url-input { width:100%; background:var(--bg2); border:1px solid var(--border2); border-radius:6px; padding:14px 18px; color:var(--text); font-family:'Barlow',sans-serif; font-size:15px; outline:none; transition:border-color .2s; }
+.url-input:focus { border-color:var(--gold); }
+.url-input::placeholder { color:var(--muted); }
+.upload-drop { border:2px dashed var(--border2); border-radius:8px; padding:40px; text-align:center; cursor:pointer; transition:all .2s; }
+.upload-drop:hover,.upload-drop.over { border-color:var(--gold); background:var(--gold-dim); }
+.upload-drop-icon { font-size:36px; margin-bottom:10px; }
+.upload-drop-text { font-size:14px; color:var(--text2); }
+.upload-drop-text strong { color:var(--text); }
+.instr-picker { display:flex; gap:8px; flex-wrap:wrap; margin:20px 0; }
+.ipbtn { display:flex; align-items:center; gap:8px; padding:10px 18px; background:var(--bg2); border:1px solid var(--border); border-radius:6px; cursor:pointer; transition:all .2s; color:var(--text2); font-size:13px; font-family:'Barlow Condensed',sans-serif; letter-spacing:1px; text-transform:uppercase; }
+.ipbtn.sel { border-color:var(--c,var(--gold)); color:var(--c,var(--gold)); background:rgba(255,255,255,0.03); }
+.ipdot { width:8px; height:8px; border-radius:50%; background:var(--c,var(--gold)); opacity:.35; transition:opacity .2s; }
+.ipbtn.sel .ipdot { opacity:1; }
+.all-row { display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--gold-dim); border:1px solid rgba(201,168,76,0.2); border-radius:6px; margin-bottom:16px; cursor:pointer; }
+.all-row input { accent-color:var(--gold); width:16px; height:16px; cursor:pointer; }
+.all-label { font-family:'Barlow Condensed',sans-serif; font-size:13px; letter-spacing:1px; color:var(--gold); cursor:pointer; }
+.all-label span { color:var(--text2); font-size:12px; }
+.run-btn { padding:15px 40px; background:var(--gold); color:#000; border:none; border-radius:6px; font-family:'Barlow Condensed',sans-serif; font-size:16px; letter-spacing:3px; text-transform:uppercase; font-weight:700; cursor:pointer; transition:all .2s; margin-top:12px; }
+.run-btn:hover { background:var(--gold2); transform:translateY(-1px); }
+.run-btn:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+.prog-wrap { margin:20px 0; display:none; }
+.prog-wrap.show { display:block; }
+.prog-label { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:2px; color:var(--muted); margin-bottom:8px; }
+.prog-bar { height:2px; background:var(--border); border-radius:2px; overflow:hidden; }
+.prog-fill { height:100%; background:linear-gradient(90deg,var(--gold),var(--amber),var(--gold)); background-size:200%; animation:shimmer 1.8s linear infinite; }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+.paywall-card { background:var(--surface); border:1px solid var(--gold); border-radius:12px; padding:36px; margin:24px 0; text-align:center; display:none; }
+.paywall-card.show { display:block; }
+.pw-title { font-family:'Playfair Display',serif; font-size:24px; font-weight:700; margin-bottom:8px; }
+.pw-sub { color:var(--text2); font-size:14px; margin-bottom:32px; }
+.pw-opts { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; text-align:left; }
+.pw-opt { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:20px 16px; cursor:pointer; transition:all .2s; position:relative; }
+.pw-opt:hover { border-color:var(--gold); transform:translateY(-2px); }
+.pw-opt.pop { border-color:var(--gold); background:var(--gold-dim); }
+.pw-opt:disabled { opacity:.6; cursor:not-allowed; transform:none; }
+.pw-price { font-family:'Playfair Display',serif; font-size:24px; font-weight:700; color:var(--gold); margin-bottom:4px; }
+.pw-label { font-family:'Barlow Condensed',sans-serif; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--text2); margin-bottom:10px; }
+.pw-desc { font-size:12px; color:var(--muted); line-height:1.5; }
+.pw-spinner { display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:20px; height:20px; border:2px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin { to{transform:translate(-50%,-50%) rotate(360deg)} }
+
+.results-wrap { margin-top:24px; display:none; }
+.results-wrap.show { display:block; }
+.res-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px; padding-bottom:24px; border-bottom:1px solid var(--border); }
+.res-title { font-family:'Playfair Display',serif; font-size:28px; font-weight:700; }
+.res-meta { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); letter-spacing:2px; margin-top:4px; }
+.res-chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+.chip { background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:5px 12px; font-family:'DM Mono',monospace; font-size:11px; color:var(--text2); }
+.chip strong { color:var(--text); }
+.irc { background:var(--surface); border:1px solid var(--border); border-radius:10px; margin-bottom:16px; overflow:hidden; }
+.irc-hd { display:flex; align-items:center; gap:14px; padding:18px 22px; cursor:pointer; user-select:none; transition:background .15s; }
+.irc-hd:hover { background:rgba(255,255,255,0.02); }
+.irc-bar { width:3px; height:36px; border-radius:2px; flex-shrink:0; }
+.irc-ico { font-size:22px; }
+.irc-inf { flex:1; }
+.irc-name { font-family:'Barlow Condensed',sans-serif; font-size:17px; letter-spacing:2px; text-transform:uppercase; font-weight:600; }
+.irc-dsc { font-size:12px; color:var(--text2); margin-top:2px; }
+.irc-chev { color:var(--muted); font-size:16px; transition:transform .2s; }
+.irc-chev.open { transform:rotate(180deg); }
+.irc-bd { display:none; padding:0 22px 22px; border-top:1px solid var(--border); }
+.irc-bd.open { display:block; }
+.mini-wave { height:40px; display:flex; align-items:center; gap:2px; margin:16px 0 12px; padding:0 4px; }
+.mwb { flex:1; border-radius:1px; opacity:.5; animation:wp 1s ease-in-out infinite; }
+@keyframes wp { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(1.5)} }
+.ntabs { display:flex; gap:4px; margin-bottom:12px; flex-wrap:wrap; }
+.ntab { background:none; border:1px solid var(--border); color:var(--muted); font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; padding:6px 14px; border-radius:4px; cursor:pointer; text-transform:uppercase; transition:all .2s; }
+.ntab.active { border-color:var(--gold); color:var(--gold); background:var(--gold-dim); }
+.notation { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:20px; font-family:'DM Mono',monospace; font-size:12px; line-height:1.8; white-space:pre; overflow-x:auto; color:#b0a898; max-height:420px; overflow-y:auto; }
+.copy-nd { margin-top:10px; background:none; border:1px solid var(--border); color:var(--text2); font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; padding:7px 14px; border-radius:4px; cursor:pointer; transition:all .2s; text-transform:uppercase; }
+.copy-nd:hover { border-color:var(--gold); color:var(--gold); }
+.prev-banner { background:linear-gradient(90deg,rgba(201,168,76,0.15),rgba(212,130,10,0.1)); border:1px solid rgba(201,168,76,0.3); border-radius:8px; padding:14px 20px; font-size:13px; color:var(--gold2); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px; }
+.prev-banner strong { color:var(--gold); }
+.unlock-btn { background:var(--gold); color:#000; border:none; padding:8px 20px; border-radius:4px; font-family:'Barlow Condensed',sans-serif; font-size:12px; letter-spacing:2px; text-transform:uppercase; font-weight:700; cursor:pointer; }
+.unlock-btn:hover { background:var(--gold2); }
+.app-err { background:rgba(200,60,60,0.1); border:1px solid rgba(200,60,60,0.3); border-radius:8px; padding:14px 18px; color:#d47070; font-family:'DM Mono',monospace; font-size:12px; margin:16px 0; display:none; }
+.app-err.show { display:block; }
+.stripe-note { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); text-align:center; margin-top:16px; }
+
+footer { background:var(--bg2); border-top:1px solid var(--border); padding:48px; text-align:center; }
+.ft-logo { font-family:'Playfair Display',serif; font-size:28px; font-weight:900; color:var(--gold); margin-bottom:8px; }
+.ft-sub { font-size:13px; color:var(--muted); margin-bottom:28px; }
+.ft-links { display:flex; gap:28px; justify-content:center; flex-wrap:wrap; }
+.ft-link { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); cursor:pointer; transition:color .2s; }
+.ft-link:hover { color:var(--gold); }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@media(max-width:900px){
+  .steps-grid{grid-template-columns:1fr 1fr} .pricing-grid{grid-template-columns:1fr 1fr}
+  .instr-grid{grid-template-columns:repeat(3,1fr)} .app-layout{grid-template-columns:1fr}
+  .sidebar{position:static;height:auto} .pw-opts{grid-template-columns:1fr 1fr}
+  nav{padding:0 20px} .section{padding:60px 20px} .app-main{padding:24px 20px}
+}
+@media(max-width:600px){
+  .pricing-grid{grid-template-columns:1fr} .steps-grid{grid-template-columns:1fr}
+  .pw-opts{grid-template-columns:1fr} .nav-links{gap:12px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo" onclick="showPage('landing')">Instr<span>-Iso</span></div>
+  <div class="nav-links">
+    <button class="nav-link" onclick="jumpTo('how')">How It Works</button>
+    <button class="nav-link" onclick="jumpTo('pricing')">Pricing</button>
+    <button class="nav-link" id="n-login" onclick="openModal('login')">Sign In</button>
+    <button class="nav-cta" id="n-signup" onclick="openModal('signup')">Try Free</button>
+    <button class="nav-link" id="n-app" style="display:none" onclick="showPage('app')">My Songs</button>
+    <button class="nav-link" id="n-logout" style="display:none" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+
+<!-- LANDING -->
+<div id="page-landing" class="page active">
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-eyebrow">AI Song → Real Instrument Parts</div>
+    <h1 class="hero-headline">You made it.<br><em>Now play it.</em></h1>
+    <p class="hero-sub">Create a song with Suno, Udio, or any AI music tool — then get note-perfect sheet music, tabs, and notation for every instrument. Instantly.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="openModal('signup')">Start Free — No Card Required</button>
+      <button class="btn-ghost" onclick="jumpTo('how')">See How It Works</button>
+    </div>
+    <div class="scroll-hint"><span>Scroll</span><div class="scroll-arrow"></div></div>
+  </section>
+
+  <div id="how"></div>
+  <div class="section">
+    <div class="sec-label">The Process</div>
+    <h2 class="sec-title">Four steps to <em>playing your song</em></h2>
+    <div class="steps-grid">
+      <div class="step"><div class="step-num">01</div><div class="step-title">Create Your Song</div><div class="step-desc">Use Suno, Udio, Soundraw, or any AI music platform to generate your original track.</div></div>
+      <div class="step"><div class="step-num">02</div><div class="step-title">Paste or Upload</div><div class="step-desc">Drop in the URL from any public audio platform, or upload the file directly.</div></div>
+      <div class="step"><div class="step-num">03</div><div class="step-title">Pick Your Instrument</div><div class="step-desc">Select guitar, bass, piano, drums, violin, banjo — whichever part you want to learn.</div></div>
+      <div class="step"><div class="step-num">04</div><div class="step-title">Play It</div><div class="step-desc">Get professional sheet music, tabs, chord charts, and drum notation. Ready to play.</div></div>
+    </div>
+  </div>
+
+  <div class="instr-showcase">
+    <div class="instr-inner">
+      <div class="sec-label">Instrument Support</div>
+      <h2 class="sec-title">Every part of <em>your song</em></h2>
+      <div class="instr-grid">
+        <div class="instr-card"><div class="instr-icon">🎸</div><div class="instr-name" style="color:var(--guitar)">Guitar</div></div>
+        <div class="instr-card"><div class="instr-icon">🎸</div><div class="instr-name" style="color:var(--bass)">Bass</div></div>
+        <div class="instr-card"><div class="instr-icon">🎹</div><div class="instr-name" style="color:var(--piano)">Piano</div></div>
+        <div class="instr-card"><div class="instr-icon">🥁</div><div class="instr-name" style="color:var(--drums)">Drums</div></div>
+        <div class="instr-card"><div class="instr-icon">🎻</div><div class="instr-name" style="color:var(--violin)">Violin</div></div>
+        <div class="instr-card"><div class="instr-icon">🪕</div><div class="instr-name" style="color:var(--banjo)">Banjo</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="pricing"></div>
+  <div class="section">
+    <div class="sec-label">Pricing</div>
+    <h2 class="sec-title">Start free. <em>Pay only when you love it.</em></h2>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-tier">Free Preview</div>
+        <div class="price-amount"><sup>$</sup>0</div>
+        <div class="price-period">always free</div>
+        <ul class="price-features"><li>60-second preview</li><li>1 instrument</li><li>All notation formats</li><li>No card required</li></ul>
+        <button class="price-btn" onclick="openModal('signup')">Get Started</button>
+      </div>
+      <div class="price-card">
+        <div class="price-tier">Single Song</div>
+        <div class="price-amount"><sup>$</sup>5</div>
+        <div class="price-period">one time</div>
+        <ul class="price-features"><li>Full song</li><li>1 instrument</li><li>All notation formats</li><li>Download notation</li></ul>
+        <button class="price-btn" onclick="openModal('signup')">Buy Song</button>
+      </div>
+      <div class="price-card">
+        <div class="price-tier">All Instruments</div>
+        <div class="price-amount"><sup>$</sup>10</div>
+        <div class="price-period">one time</div>
+        <ul class="price-features"><li>Full song</li><li>Every instrument</li><li>All notation formats</li><li>Download notation</li></ul>
+        <button class="price-btn" onclick="openModal('signup')">Buy Song</button>
+      </div>
+      <div class="price-card featured">
+        <div class="price-badge">Most Popular</div>
+        <div class="price-tier">Monthly Solo</div>
+        <div class="price-amount"><sup>$</sup>15</div>
+        <div class="price-period">per month</div>
+        <ul class="price-features"><li>15 songs / month</li><li>1 instrument per song</li><li>All notation formats</li><li>Song library</li></ul>
+        <button class="price-btn gold" onclick="openModal('signup')">Subscribe</button>
+      </div>
+      <div class="price-card">
+        <div class="price-tier">Monthly Full Band</div>
+        <div class="price-amount"><sup>$</sup>30</div>
+        <div class="price-period">per month</div>
+        <ul class="price-features"><li>15 songs / month</li><li>All instruments</li><li>All notation formats</li><li>Song library</li></ul>
+        <button class="price-btn" onclick="openModal('signup')">Subscribe</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="ft-logo">Instr-Iso</div>
+    <div class="ft-sub">Turn your AI songs into real music you can play.</div>
+    <div class="ft-links">
+      <span class="ft-link" onclick="openModal('signup')">Get Started</span>
+      <span class="ft-link" onclick="jumpTo('pricing')">Pricing</span>
+      <span class="ft-link" onclick="jumpTo('how')">How It Works</span>
+      <span class="ft-link">Contact</span>
+    </div>
+  </footer>
+</div>
+
+<!-- APP -->
+<div id="page-app" class="page">
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-greeting">Welcome back</div>
+      <div class="sidebar-user" id="sb-user">Musician</div>
+      <div class="sidebar-sec">Your Songs</div>
+      <div class="song-list" id="song-list"><div style="font-size:13px;color:var(--muted);padding:12px 0;">No songs yet.</div></div>
+      <div class="sidebar-bottom">
+        <div class="plan-badge" id="plan-badge">FREE</div>
+        <div class="songs-remaining" id="songs-remaining">Unlimited 60-sec previews</div>
+        <button class="upgrade-btn" onclick="showPage('landing');setTimeout(()=>jumpTo('pricing'),100)">Upgrade Plan</button>
+      </div>
+    </aside>
+    <main class="app-main">
+      <div class="analysis-form">
+        <div class="form-title">Analyze New Song</div>
+        <div class="method-tabs">
+          <button class="method-tab active" onclick="switchMethod('url',this)">Paste URL</button>
+          <button class="method-tab" onclick="switchMethod('upload',this)">Upload File</button>
+        </div>
+        <div id="input-url">
+          <input type="text" class="url-input" id="song-url" placeholder="Paste any audio URL — Suno, Udio, SoundCloud, or any public link..." />
+        </div>
+        <div id="input-upload" style="display:none">
+          <div class="upload-drop" id="drop-zone" onclick="document.getElementById('af').click()">
+            <div class="upload-drop-icon">🎵</div>
+            <div class="upload-drop-text" id="drop-text"><strong>Drop your audio file here</strong><br>MP3, WAV, FLAC, M4A supported</div>
+          </div>
+          <input type="file" id="af" accept="audio/*" style="display:none" onchange="handleFile(event)" />
+        </div>
+        <div style="margin-top:24px">
+          <div class="sidebar-sec" style="margin-bottom:12px">Select Instrument(s)</div>
+          <label class="all-row">
+            <input type="checkbox" id="all-chk" onchange="toggleAll(this)" />
+            <span class="all-label">All Instruments <span>— requires $10 single or $30/mo plan</span></span>
+          </label>
+          <div class="instr-picker">
+            <button class="ipbtn" style="--c:var(--guitar)" data-i="guitar" onclick="pickInstr(this)"><span class="ipdot"></span>🎸 Guitar</button>
+            <button class="ipbtn" style="--c:var(--bass)" data-i="bass" onclick="pickInstr(this)"><span class="ipdot"></span>🎸 Bass</button>
+            <button class="ipbtn" style="--c:var(--piano)" data-i="piano" onclick="pickInstr(this)"><span class="ipdot"></span>🎹 Piano</button>
+            <button class="ipbtn" style="--c:var(--drums)" data-i="drums" onclick="pickInstr(this)"><span class="ipdot"></span>🥁 Drums</button>
+            <button class="ipbtn" style="--c:var(--violin)" data-i="violin" onclick="pickInstr(this)"><span class="ipdot"></span>🎻 Violin</button>
+            <button class="ipbtn" style="--c:var(--banjo)" data-i="banjo" onclick="pickInstr(this)"><span class="ipdot"></span>🪕 Banjo</button>
+          </div>
+        </div>
+        <button class="run-btn" id="run-btn" onclick="runAnalysis()">▶ Analyze Song</button>
+        <div class="prog-wrap" id="prog-wrap"><div class="prog-label" id="prog-lbl">Analyzing...</div><div class="prog-bar"><div class="prog-fill"></div></div></div>
+        <div class="app-err" id="app-err"></div>
+      </div>
+
+      <!-- PAYWALL -->
+      <div class="paywall-card" id="pw-card">
+        <div class="pw-title">Unlock Full Song</div>
+        <div class="pw-sub">You've heard the preview. Ready to learn the whole thing?</div>
+        <div class="pw-opts">
+          <div class="pw-opt" id="pw-5" onclick="checkout('price_1TEsBf2eFPfpFFw7vm84QFdL','single-1',this)">
+            <div class="pw-price">$5</div>
+            <div class="pw-label">This Song</div>
+            <div class="pw-desc">Full song, 1 instrument. One-time.</div>
+            <div class="pw-spinner" id="spin-5"></div>
+          </div>
+          <div class="pw-opt pop" id="pw-10" onclick="checkout('price_1TEsCn2eFPfpFFw7eP7v6XiW','single-all',this)">
+            <div class="pw-price">$10</div>
+            <div class="pw-label">All Instruments</div>
+            <div class="pw-desc">Full song, every instrument. One-time.</div>
+            <div class="pw-spinner" id="spin-10"></div>
+          </div>
+          <div class="pw-opt" id="pw-15" onclick="checkout('price_1TEsGQ2eFPfpFFw7XQEBbPsL','sub-solo',this)">
+            <div class="pw-price">$15<span style="font-size:14px">/mo</span></div>
+            <div class="pw-label">Solo Plan</div>
+            <div class="pw-desc">15 songs/month, 1 instrument each.</div>
+            <div class="pw-spinner" id="spin-15"></div>
+          </div>
+          <div class="pw-opt" id="pw-30" onclick="checkout('price_1TEsOl2eFPfpFFw7n8rdGd3Y','sub-band',this)">
+            <div class="pw-price">$30<span style="font-size:14px">/mo</span></div>
+            <div class="pw-label">Full Band</div>
+            <div class="pw-desc">15 songs/month, all instruments.</div>
+            <div class="pw-spinner" id="spin-30"></div>
+          </div>
+        </div>
+        <div class="stripe-note">🔒 Secure checkout powered by Stripe · Test card: 4242 4242 4242 4242</div>
+      </div>
+
+      <div class="results-wrap" id="res-wrap">
+        <div class="res-header">
+          <div>
+            <div class="res-title" id="res-title">—</div>
+            <div class="res-meta" id="res-meta">—</div>
+            <div class="res-chips" id="res-chips"></div>
+          </div>
+        </div>
+        <div id="prev-banner-wrap"></div>
+        <div id="irc-container"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-logo">Instr-Iso</div>
+    <div class="modal-title" id="modal-sub">Create Your Free Account</div>
+    <div class="modal-error" id="modal-err"></div>
+    <div class="modal-success" id="modal-ok"></div>
+    <button class="google-btn" onclick="googleLogin()">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+      Continue with Google
+    </button>
+    <div class="divider"><span>or</span></div>
+    <div class="form-field"><label class="form-label">Email</label><input type="email" class="form-input" id="auth-email" placeholder="you@example.com" /></div>
+    <div class="form-field"><label class="form-label">Password</label><input type="password" class="form-input" id="auth-pass" placeholder="••••••••" /></div>
+    <button class="form-submit" id="auth-submit" onclick="handleAuth()">Sign In</button>
+    <div class="modal-switch" id="modal-switch">Don't have an account? <a onclick="toggleMode()">Create one free</a></div>
+  </div>
+</div>
+
+<script>
+// ── KEYS ──
+const SUPABASE_URL = 'https://bxotzqydejfixxugfpsb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_wfaLU_sfoePSCCzMSh7TAQ_IplLoYec';
+const STRIPE_KEY   = 'pk_test_51TEs3c2eFPfpFFw7P9emkZReVZsEFPw0Uz4Uo55QvBwRUYw9WlKLJGtRKKdH9T12wmqgVHBq2CkZ1IrUe7n3TykY00j8LqLCDu';
+
+// ── INIT ──
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const stripe = Stripe(STRIPE_KEY);
+
+// ── STATE ──
+let user = null, authMode = 'login';
+let selInstrs = new Set(), allInstrs = false;
+let inputMethod = 'url', uploadedName = '';
+let songHistory = [];
+
+const IMETA = {
+  guitar:{icon:'🎸',color:'var(--guitar)',label:'Guitar'},
+  bass:  {icon:'🎸',color:'var(--bass)',  label:'Bass'},
+  piano: {icon:'🎹',color:'var(--piano)', label:'Piano / Keys'},
+  drums: {icon:'🥁',color:'var(--drums)', label:'Drums'},
+  violin:{icon:'🎻',color:'var(--violin)',label:'Violin'},
+  banjo: {icon:'🪕',color:'var(--banjo)', label:'Banjo'},
+};
+
+// ── AUTH LISTENER ──
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (session?.user) {
+    user = session.user;
+    updateNav();
+    if (event === 'SIGNED_IN') { closeModal(); showPage('app'); await loadSongs(); }
+  } else { user = null; updateNav(); }
+});
+
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) { user = session.user; updateNav(); }
+})();
+
+// ── ROUTING ──
+function showPage(n) { document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById('page-'+n).classList.add('active'); window.scrollTo(0,0); }
+function jumpTo(id) { const el=document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth'}); }
+
+// ── NAV ──
+function updateNav() {
+  const on=!!user;
+  document.getElementById('n-login').style.display=on?'none':'';
+  document.getElementById('n-signup').style.display=on?'none':'';
+  document.getElementById('n-app').style.display=on?'':'none';
+  document.getElementById('n-logout').style.display=on?'':'none';
+  if(on) document.getElementById('sb-user').textContent=user.user_metadata?.full_name||user.email?.split('@')[0]||'Musician';
+}
+async function logout() { await sb.auth.signOut(); user=null; songHistory=[]; updateNav(); showPage('landing'); }
+
+// ── AUTH MODAL ──
+function openModal(mode) { authMode=mode==='signup'?'signup':'login'; updateModalMode(); document.getElementById('modal-err').classList.remove('show'); document.getElementById('modal-ok').classList.remove('show'); document.getElementById('auth-modal').classList.add('open'); }
+function closeModal() { document.getElementById('auth-modal').classList.remove('open'); }
+function toggleMode() { authMode=authMode==='login'?'signup':'login'; updateModalMode(); }
+function updateModalMode() {
+  const lg=authMode==='login';
+  document.getElementById('modal-sub').textContent=lg?'Sign In to Your Account':'Create Your Free Account';
+  document.getElementById('auth-submit').textContent=lg?'Sign In':'Create Account';
+  document.getElementById('modal-switch').innerHTML=lg?`Don't have an account? <a onclick="toggleMode()">Create one free</a>`:`Already have an account? <a onclick="toggleMode()">Sign in</a>`;
+}
+function showModalErr(m){const e=document.getElementById('modal-err');e.textContent=m;e.classList.add('show');}
+function showModalOk(m){const e=document.getElementById('modal-ok');e.textContent=m;e.classList.add('show');}
+
+async function googleLogin() {
+  const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href}});
+  if(error) showModalErr(error.message);
+}
+async function handleAuth() {
+  const email=document.getElementById('auth-email').value.trim();
+  const pass=document.getElementById('auth-pass').value;
+  if(!email||!pass){showModalErr('Please fill in all fields.');return;}
+  const btn=document.getElementById('auth-submit');
+  btn.textContent='Please wait...'; btn.disabled=true;
+  let error;
+  if(authMode==='signup'){
+    const r=await sb.auth.signUp({email,password:pass}); error=r.error;
+    if(!error){showModalOk('Account created! Check your email to confirm, then sign in.');btn.textContent='Create Account';btn.disabled=false;return;}
+  } else {
+    const r=await sb.auth.signInWithPassword({email,password:pass}); error=r.error;
+  }
+  btn.textContent=authMode==='login'?'Sign In':'Create Account'; btn.disabled=false;
+  if(error) showModalErr(error.message);
+}
+
+// ── STRIPE CHECKOUT ──
+async function checkout(priceId, planType, el) {
+  if(!user){openModal('signup');return;}
+  const spinId='spin-'+el.querySelector('.pw-price').textContent.replace(/[^0-9]/g,'');
+  const spin=el.querySelector('.pw-spinner');
+  if(spin) spin.style.display='block';
+  el.style.pointerEvents='none';
+
+  try {
+    // Stripe Checkout requires a backend to create a session securely.
+    // For now we redirect to Stripe Payment Links which work without a backend.
+    // Replace these URLs with your actual Stripe Payment Links from your dashboard.
+    const paymentLinks = {
+      'price_1TEsBf2eFPfpFFw7vm84QFdL': 'https://buy.stripe.com/test_9B614gaJ79kX7bT6lB1gs01',
+      'price_1TEsCn2eFPfpFFw7eP7v6XiW': 'https://buy.stripe.com/test_8x26oA18xgNp3ZH39p1gs02',
+      'price_1TEsGQ2eFPfpFFw7XQEBbPsL': 'https://buy.stripe.com/test_4gM4gseZn68L7bT7pF1gs03',
+      'price_1TEsOl2eFPfpFFw7n8rdGd3Y': 'https://buy.stripe.com/test_fZu6oA5o54H8fX5hx1gs04',
+    };
+
+    const link = paymentLinks[priceId];
+    if(link && !link.includes('your_link')) {
+      window.location.href = link + '?prefilled_email=' + encodeURIComponent(user.email);
+    } else {
+      // Fallback: show instructions to set up payment links
+      if(spin) spin.style.display='none';
+      el.style.pointerEvents='';
+      showStripeSetupNote(planType);
+    }
+  } catch(err) {
+    if(spin) spin.style.display='none';
+    el.style.pointerEvents='';
+    showAppErr('Payment error: ' + err.message);
+  }
+}
+
+function showStripeSetupNote(plan) {
+  document.getElementById('app-err').classList.remove('show');
+  const note = document.createElement('div');
+  note.style.cssText='background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);border-radius:8px;padding:20px;margin-top:16px;font-size:13px;color:var(--gold2);line-height:1.7;';
+  note.innerHTML=`<strong style="color:var(--gold)">One more step to activate payments:</strong><br><br>
+  In your Stripe dashboard, go to <strong>Payment Links</strong> and create a link for each product. Then paste the link URLs into the <code>paymentLinks</code> object in the app code.<br><br>
+  <span style="color:var(--muted)">This is the final step before your app accepts real payments.</span>`;
+  const pw=document.getElementById('pw-card');
+  const existing=pw.querySelector('.setup-note');
+  if(existing) existing.remove();
+  note.className='setup-note';
+  pw.appendChild(note);
+}
+
+// ── INPUT ──
+function switchMethod(m,btn){inputMethod=m;document.querySelectorAll('.method-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');document.getElementById('input-url').style.display=m==='url'?'':'none';document.getElementById('input-upload').style.display=m==='upload'?'':'none';}
+function handleFile(e){const f=e.target.files[0];if(f){uploadedName=f.name;document.getElementById('drop-text').innerHTML=`<strong>${f.name}</strong><br><span style="color:var(--muted)">Ready to analyze</span>`;document.getElementById('drop-zone').style.borderColor='var(--gold)';}}
+const dz=document.getElementById('drop-zone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');const f=e.dataTransfer.files[0];if(f){uploadedName=f.name;document.getElementById('drop-text').innerHTML=`<strong>${f.name}</strong>`;dz.style.borderColor='var(--gold)';}});
+
+// ── INSTRUMENT SELECTION ──
+function pickInstr(btn){if(allInstrs)return;const i=btn.dataset.i;if(btn.classList.contains('sel')){btn.classList.remove('sel');selInstrs.delete(i);}else{document.querySelectorAll('.ipbtn').forEach(b=>b.classList.remove('sel'));selInstrs.clear();btn.classList.add('sel');selInstrs.add(i);}}
+function toggleAll(cb){allInstrs=cb.checked;document.querySelectorAll('.ipbtn').forEach(b=>{b.style.opacity=allInstrs?'0.4':'1';b.style.pointerEvents=allInstrs?'none':'';if(allInstrs)b.classList.remove('sel');});if(allInstrs)selInstrs.clear();}
+
+// ── ANALYSIS ──
+async function runAnalysis(){
+  if(!user){openModal('signup');return;}
+  const url=document.getElementById('song-url').value.trim();
+  const hasInput=inputMethod==='url'?url:uploadedName;
+  if(!hasInput){showAppErr('Please paste a URL or upload an audio file.');return;}
+  if(!allInstrs&&selInstrs.size===0){showAppErr('Please select at least one instrument.');return;}
+  const instrList=allInstrs?'guitar, bass, piano, drums, violin, banjo':[...selInstrs].join(', ');
+  setRunning(true);setProgress(true,'Fetching song data...');
+  document.getElementById('res-wrap').classList.remove('show');
+  document.getElementById('pw-card').classList.remove('show');
+  clearAppErr();
+  const ref=inputMethod==='url'?`this URL: ${url}`:`this audio file: ${uploadedName}`;
+  const prompt=`You are a professional music transcriptionist. The user has an AI-generated song from ${ref}.
+Based on available metadata, URL context, filename, style cues, or reasonable inference:
+1. Identify or name the song, infer genre/style, key, time signature, BPM, mood.
+2. For each instrument — ${instrList} — write detailed playable notation for the first 8 bars (free preview).
+For each provide:
+- standard: note-by-note with measure numbers, note names+octave (C4, D#4), rhythmic values
+- tabs: ASCII tab (6-string guitar, 4-string bass, N/A for others)
+- chords: chord chart with bar numbers and symbols
+- drum: BD/SD/HH/OH/CY/TT grid, 16th-note subdivisions, 1 bar per line
+Return ONLY raw JSON (no markdown):
+{"song":{"title":"...","style":"...","key":"...","timeSignature":"4/4","bpm":"...","mood":"..."},"instruments":{"guitar":{"description":"...","standard":"...","tabs":"...","chords":"...","drum":"N/A"},"bass":{"description":"...","standard":"...","tabs":"...","chords":"...","drum":"N/A"},"piano":{"description":"...","standard":"...","tabs":"N/A","chords":"...","drum":"N/A"},"drums":{"description":"...","standard":"N/A","tabs":"N/A","chords":"N/A","drum":"..."},"violin":{"description":"...","standard":"...","tabs":"N/A","chords":"...","drum":"N/A"},"banjo":{"description":"...","standard":"...","tabs":"...","chords":"...","drum":"N/A"}}}
+Only include instruments from: ${instrList}.`;
+  try{
+    setProgress(true,'Generating notation with AI...');
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    if(data.error)throw new Error(data.error.message);
+    const result=JSON.parse(data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim());
+    setProgress(false);
+    renderResults(result,url||uploadedName);
+    await saveSong(result.song,instrList);
+  }catch(err){setProgress(false);showAppErr('Analysis failed: '+err.message);}
+  finally{setRunning(false);}
+}
+
+// ── RENDER ──
+function renderResults(data,ref){
+  const s=data.song;
+  document.getElementById('res-title').textContent=s.title||ref||'Your Song';
+  document.getElementById('res-meta').textContent=s.style||'';
+  document.getElementById('res-chips').innerHTML=[{k:'KEY',v:s.key},{k:'TIME',v:s.timeSignature},{k:'BPM',v:s.bpm},{k:'MOOD',v:s.mood}].map(c=>`<div class="chip"><span style="font-size:10px;color:var(--muted)">${c.k}&nbsp;</span><strong>${c.v||'—'}</strong></div>`).join('');
+  document.getElementById('prev-banner-wrap').innerHTML=`<div class="prev-banner"><span>🎵 <strong>60-Second Preview</strong> — First 8 bars shown. Unlock the full song below.</span><button class="unlock-btn" onclick="document.getElementById('pw-card').classList.add('show');document.getElementById('pw-card').scrollIntoView({behavior:'smooth'})">Unlock Full Song</button></div>`;
+  const c=document.getElementById('irc-container');c.innerHTML='';
+  ['guitar','bass','piano','drums','violin','banjo'].forEach(key=>{
+    if(!data.instruments?.[key])return;
+    const instr=data.instruments[key],meta=IMETA[key];
+    const fmts={standard:{label:'NOTATION',v:instr.standard},tabs:{label:'TABS',v:instr.tabs},chords:{label:'CHORDS',v:instr.chords},drum:{label:'DRUM GRID',v:instr.drum}};
+    const avail=Object.entries(fmts).filter(([,f])=>f.v&&f.v!=='N/A'&&f.v.length>3);
+    if(!avail.length)return;
+    const el=document.createElement('div');el.className='irc';
+    el.innerHTML=`<div class="irc-hd" onclick="tgIRC('${key}')"><div class="irc-bar" style="background:${meta.color}"></div><div class="irc-ico">${meta.icon}</div><div class="irc-inf"><div class="irc-name" style="color:${meta.color}">${meta.label}</div><div class="irc-dsc">${instr.description||''}</div></div><div class="irc-chev open" id="chev-${key}">▼</div></div><div class="irc-bd open" id="bd-${key}">${mkWave(meta.color)}<div class="ntabs">${avail.map(([k,f],i)=>`<button class="ntab ${i===0?'active':''}" onclick="swNT('${key}','${k}',this)">${f.label}</button>`).join('')}</div>${avail.map(([k,f],i)=>`<div class="notation" id="nd-${key}-${k}" style="display:${i===0?'block':'none'}">${esc(f.v)}</div>`).join('')}<button class="copy-nd" onclick="cpND('${key}','${avail[0][0]}',this)">⎘ Copy notation</button></div>`;
+    c.appendChild(el);
+  });
+  document.getElementById('res-wrap').classList.add('show');
+  document.getElementById('pw-card').classList.add('show');
+  document.getElementById('res-wrap').scrollIntoView({behavior:'smooth'});
+}
+function mkWave(color){return `<div class="mini-wave">${Array.from({length:50},(_,i)=>`<div class="mwb" style="height:${6+Math.random()*28}px;background:${color};animation-delay:${(i*0.05).toFixed(2)}s;animation-duration:${(0.7+Math.random()*0.8).toFixed(2)}s"></div>`).join('')}</div>`;}
+function tgIRC(k){document.getElementById('bd-'+k).classList.toggle('open');document.getElementById('chev-'+k).classList.toggle('open');}
+function swNT(k,fmt,btn){const bd=document.getElementById('bd-'+k);bd.querySelectorAll('.notation').forEach(e=>e.style.display='none');bd.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));const nd=document.getElementById(`nd-${k}-${fmt}`);if(nd)nd.style.display='block';btn.classList.add('active');const cb=bd.querySelector('.copy-nd');if(cb)cb.setAttribute('onclick',`cpND('${k}','${fmt}',this)`);}
+function cpND(k,fmt,btn){const el=document.getElementById(`nd-${k}-${fmt}`);if(!el)return;navigator.clipboard.writeText(el.textContent).then(()=>{const o=btn.innerHTML;btn.innerHTML='✓ Copied!';btn.style.color='var(--gold)';setTimeout(()=>{btn.innerHTML=o;btn.style.color='';},2000);});}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── SUPABASE SONGS ──
+async function saveSong(song,instrs){
+  if(!user)return;
+  const {data,error}=await sb.from('songs').insert({user_id:user.id,title:song.title||'Untitled',instrs,style:song.style||'',is_preview:true}).select();
+  if(!error&&data){songHistory.unshift({id:data[0].id,title:data[0].title,instrs:data[0].instrs,date:new Date(data[0].created_at).toLocaleDateString()});renderSongList();}
+}
+async function loadSongs(){
+  if(!user)return;
+  const {data,error}=await sb.from('songs').select('*').eq('user_id',user.id).order('created_at',{ascending:false}).limit(20);
+  if(!error&&data){songHistory=data.map(s=>({id:s.id,title:s.title,instrs:s.instrs,date:new Date(s.created_at).toLocaleDateString()}));renderSongList();}
+}
+function renderSongList(){
+  const l=document.getElementById('song-list');
+  l.innerHTML=songHistory.length?songHistory.map(s=>`<div class="song-item"><div class="song-item-title">${s.title}</div><div class="song-item-meta">${s.instrs} · ${s.date}</div></div>`).join(''):'<div style="font-size:13px;color:var(--muted);padding:12px 0;">No songs yet.</div>';
+}
+
+// ── UI HELPERS ──
+function setRunning(on){const b=document.getElementById('run-btn');b.disabled=on;b.textContent=on?'⏳ Analyzing...':'▶ Analyze Song';}
+function setProgress(on,lbl){const p=document.getElementById('prog-wrap');p.classList.toggle('show',on);if(lbl)document.getElementById('prog-lbl').textContent=lbl;}
+function showAppErr(m){const e=document.getElementById('app-err');e.textContent=m;e.classList.add('show');}
+function clearAppErr(){document.getElementById('app-err').classList.remove('show');}
+
+updateNav();
+</script>
+</body>
+</html>
