@@ -63,7 +63,7 @@ nav { position:fixed; top:0; left:0; right:0; z-index:500; padding:0 48px; heigh
 
 .instr-showcase { padding:80px 48px; background:var(--bg2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
 .instr-inner { max-width:1100px; margin:0 auto; }
-.instr-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin-top:48px; }
+.instr-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:48px; }
 .instr-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:24px 16px; text-align:center; transition:all .25s; }
 .instr-card:hover { transform:translateY(-4px); }
 .instr-icon { font-size:32px; margin-bottom:10px; }
@@ -111,6 +111,7 @@ nav { position:fixed; top:0; left:0; right:0; z-index:500; padding:0 48px; heigh
 .modal-success { background:rgba(50,180,100,0.1); border:1px solid rgba(50,180,100,0.3); border-radius:6px; padding:10px 14px; font-size:13px; color:#70d4a0; margin-bottom:16px; display:none; }
 .modal-success.show { display:block; }
 
+/* APP */
 #page-app { padding-top:68px; }
 .app-layout { display:grid; grid-template-columns:280px 1fr; min-height:calc(100vh - 68px); }
 .sidebar { background:var(--bg2); border-right:1px solid var(--border); padding:32px 24px; position:sticky; top:68px; height:calc(100vh - 68px); overflow-y:auto; display:flex; flex-direction:column; }
@@ -143,16 +144,56 @@ nav { position:fixed; top:0; left:0; right:0; z-index:500; padding:0 48px; heigh
 .upload-drop-icon { font-size:36px; margin-bottom:10px; }
 .upload-drop-text { font-size:14px; color:var(--text2); }
 .upload-drop-text strong { color:var(--text); }
-.instr-picker { display:flex; gap:8px; flex-wrap:wrap; margin:20px 0; }
-.ipbtn { display:flex; align-items:center; gap:8px; padding:10px 18px; background:var(--bg2); border:1px solid var(--border); border-radius:6px; cursor:pointer; transition:all .2s; color:var(--text2); font-size:13px; font-family:'Barlow Condensed',sans-serif; letter-spacing:1px; text-transform:uppercase; }
-.ipbtn.sel { border-color:var(--c,var(--gold)); color:var(--c,var(--gold)); background:rgba(255,255,255,0.03); }
-.ipdot { width:8px; height:8px; border-radius:50%; background:var(--c,var(--gold)); opacity:.35; transition:opacity .2s; }
-.ipbtn.sel .ipdot { opacity:1; }
-.all-row { display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--gold-dim); border:1px solid rgba(201,168,76,0.2); border-radius:6px; margin-bottom:16px; cursor:pointer; }
-.all-row input { accent-color:var(--gold); width:16px; height:16px; cursor:pointer; }
-.all-label { font-family:'Barlow Condensed',sans-serif; font-size:13px; letter-spacing:1px; color:var(--gold); cursor:pointer; }
-.all-label span { color:var(--text2); font-size:12px; }
-.run-btn { padding:15px 40px; background:var(--gold); color:#000; border:none; border-radius:6px; font-family:'Barlow Condensed',sans-serif; font-size:16px; letter-spacing:3px; text-transform:uppercase; font-weight:700; cursor:pointer; transition:all .2s; margin-top:12px; }
+
+/* INSTRUMENT SECTION */
+.instr-section { margin-top:24px; }
+.instr-section-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
+
+/* Main 4 instruments */
+.main-instrs { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:12px; }
+
+.instr-block { background:var(--bg2); border:1px solid var(--border); border-radius:8px; overflow:hidden; transition:border-color .2s; }
+.instr-block.active { border-color:var(--c,var(--gold)); }
+
+.instr-block-header { display:flex; align-items:center; gap:10px; padding:12px 14px; cursor:pointer; user-select:none; }
+.instr-block-icon { font-size:20px; }
+.instr-block-name { font-family:'Barlow Condensed',sans-serif; font-size:14px; letter-spacing:1px; text-transform:uppercase; color:var(--text2); flex:1; transition:color .2s; }
+.instr-block.active .instr-block-name { color:var(--c,var(--gold)); }
+.instr-block-check { width:16px; height:16px; border:1px solid var(--border2); border-radius:3px; display:flex; align-items:center; justify-content:center; transition:all .2s; flex-shrink:0; }
+.instr-block.active .instr-block-check { background:var(--c,var(--gold)); border-color:var(--c,var(--gold)); }
+.instr-block-check::after { content:'✓'; font-size:10px; color:#000; display:none; }
+.instr-block.active .instr-block-check::after { display:block; }
+
+/* Format options inside each instrument block */
+.instr-formats { display:none; padding:0 14px 14px; gap:6px; flex-wrap:wrap; }
+.instr-block.active .instr-formats { display:flex; }
+.fmt-btn { background:none; border:1px solid var(--border2); border-radius:4px; padding:5px 12px; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); cursor:pointer; transition:all .2s; }
+.fmt-btn:hover { border-color:var(--c,var(--gold)); color:var(--text); }
+.fmt-btn.sel { border-color:var(--c,var(--gold)); color:var(--c,var(--gold)); background:rgba(255,255,255,0.03); }
+
+/* More instruments dropdown */
+.more-instrs-wrap { position:relative; }
+.more-instrs-btn { display:flex; align-items:center; gap:8px; padding:10px 16px; background:var(--bg2); border:1px solid var(--border); border-radius:8px; cursor:pointer; color:var(--text2); font-family:'Barlow Condensed',sans-serif; font-size:13px; letter-spacing:1px; text-transform:uppercase; width:100%; transition:border-color .2s; }
+.more-instrs-btn:hover { border-color:var(--border2); }
+.more-instrs-btn .arrow { margin-left:auto; transition:transform .2s; font-size:11px; }
+.more-instrs-btn.open .arrow { transform:rotate(180deg); }
+.more-instrs-dropdown { display:none; background:var(--surface2); border:1px solid var(--border2); border-radius:8px; margin-top:6px; overflow:hidden; }
+.more-instrs-dropdown.open { display:block; }
+.more-instr-item { display:flex; align-items:center; gap:10px; padding:12px 16px; cursor:pointer; transition:background .15s; border-bottom:1px solid var(--border); }
+.more-instr-item:last-child { border-bottom:none; }
+.more-instr-item:hover { background:var(--surface); }
+.more-instr-item-icon { font-size:18px; }
+.more-instr-item-name { font-family:'Barlow Condensed',sans-serif; font-size:14px; letter-spacing:1px; text-transform:uppercase; color:var(--text2); flex:1; }
+.more-instr-item.selected .more-instr-item-name { color:var(--c,var(--gold)); }
+.more-instr-check { width:16px; height:16px; border:1px solid var(--border2); border-radius:3px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.more-instr-item.selected .more-instr-check { background:var(--c,var(--gold)); border-color:var(--c,var(--gold)); }
+.more-instr-check::after { content:'✓'; font-size:10px; color:#000; display:none; }
+.more-instr-item.selected .more-instr-check::after { display:block; }
+
+/* Selected extra instruments format blocks */
+.extra-instr-blocks { margin-top:10px; display:flex; flex-direction:column; gap:10px; }
+
+.run-btn { padding:15px 40px; background:var(--gold); color:#000; border:none; border-radius:6px; font-family:'Barlow Condensed',sans-serif; font-size:16px; letter-spacing:3px; text-transform:uppercase; font-weight:700; cursor:pointer; transition:all .2s; margin-top:20px; }
 .run-btn:hover { background:var(--gold2); transform:translateY(-1px); }
 .run-btn:disabled { opacity:.4; cursor:not-allowed; transform:none; }
 .prog-wrap { margin:20px 0; display:none; }
@@ -162,6 +203,12 @@ nav { position:fixed; top:0; left:0; right:0; z-index:500; padding:0 48px; heigh
 .prog-fill { height:100%; background:linear-gradient(90deg,var(--gold),var(--amber),var(--gold)); background-size:200%; animation:shimmer 1.8s linear infinite; }
 @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
+/* Free preview used banner */
+.preview-used-banner { background:rgba(200,60,60,0.1); border:1px solid rgba(200,60,60,0.3); border-radius:8px; padding:16px 20px; margin-bottom:20px; display:none; }
+.preview-used-banner.show { display:block; }
+.pub-title { font-family:'Barlow Condensed',sans-serif; font-size:15px; letter-spacing:1px; text-transform:uppercase; color:#d47070; margin-bottom:4px; }
+.pub-sub { font-size:13px; color:var(--text2); }
+
 .paywall-card { background:var(--surface); border:1px solid var(--gold); border-radius:12px; padding:36px; margin:24px 0; text-align:center; display:none; }
 .paywall-card.show { display:block; }
 .pw-title { font-family:'Playfair Display',serif; font-size:24px; font-weight:700; margin-bottom:8px; }
@@ -170,12 +217,10 @@ nav { position:fixed; top:0; left:0; right:0; z-index:500; padding:0 48px; heigh
 .pw-opt { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:20px 16px; cursor:pointer; transition:all .2s; position:relative; }
 .pw-opt:hover { border-color:var(--gold); transform:translateY(-2px); }
 .pw-opt.pop { border-color:var(--gold); background:var(--gold-dim); }
-.pw-opt:disabled { opacity:.6; cursor:not-allowed; transform:none; }
 .pw-price { font-family:'Playfair Display',serif; font-size:24px; font-weight:700; color:var(--gold); margin-bottom:4px; }
 .pw-label { font-family:'Barlow Condensed',sans-serif; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--text2); margin-bottom:10px; }
 .pw-desc { font-size:12px; color:var(--muted); line-height:1.5; }
-.pw-spinner { display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:20px; height:20px; border:2px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin .8s linear infinite; }
-@keyframes spin { to{transform:translate(-50%,-50%) rotate(360deg)} }
+.stripe-note { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); text-align:center; margin-top:16px; }
 
 .results-wrap { margin-top:24px; display:none; }
 .results-wrap.show { display:block; }
@@ -212,7 +257,6 @@ nav { position:fixed; top:0; left:0; right:0; z-index:500; padding:0 48px; heigh
 .unlock-btn:hover { background:var(--gold2); }
 .app-err { background:rgba(200,60,60,0.1); border:1px solid rgba(200,60,60,0.3); border-radius:8px; padding:14px 18px; color:#d47070; font-family:'DM Mono',monospace; font-size:12px; margin:16px 0; display:none; }
 .app-err.show { display:block; }
-.stripe-note { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); text-align:center; margin-top:16px; }
 
 footer { background:var(--bg2); border-top:1px solid var(--border); padding:48px; text-align:center; }
 .ft-logo { font-family:'Playfair Display',serif; font-size:28px; font-weight:900; color:var(--gold); margin-bottom:8px; }
@@ -227,10 +271,12 @@ footer { background:var(--bg2); border-top:1px solid var(--border); padding:48px
   .instr-grid{grid-template-columns:repeat(3,1fr)} .app-layout{grid-template-columns:1fr}
   .sidebar{position:static;height:auto} .pw-opts{grid-template-columns:1fr 1fr}
   nav{padding:0 20px} .section{padding:60px 20px} .app-main{padding:24px 20px}
+  .main-instrs{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:600px){
   .pricing-grid{grid-template-columns:1fr} .steps-grid{grid-template-columns:1fr}
   .pw-opts{grid-template-columns:1fr} .nav-links{gap:12px}
+  .main-instrs{grid-template-columns:repeat(2,1fr)}
 }
 </style>
 </head>
@@ -269,7 +315,7 @@ footer { background:var(--bg2); border-top:1px solid var(--border); padding:48px
     <div class="steps-grid">
       <div class="step"><div class="step-num">01</div><div class="step-title">Create Your Song</div><div class="step-desc">Use Suno, Udio, Soundraw, or any AI music platform to generate your original track.</div></div>
       <div class="step"><div class="step-num">02</div><div class="step-title">Paste or Upload</div><div class="step-desc">Drop in the URL from any public audio platform, or upload the file directly.</div></div>
-      <div class="step"><div class="step-num">03</div><div class="step-title">Pick Your Instrument</div><div class="step-desc">Select guitar, bass, piano, drums, violin, banjo — whichever part you want to learn.</div></div>
+      <div class="step"><div class="step-num">03</div><div class="step-title">Pick Your Instrument</div><div class="step-desc">Select from guitar, bass, piano, drums, and more — whichever part you want to learn.</div></div>
       <div class="step"><div class="step-num">04</div><div class="step-title">Play It</div><div class="step-desc">Get professional sheet music, tabs, chord charts, and drum notation. Ready to play.</div></div>
     </div>
   </div>
@@ -278,13 +324,14 @@ footer { background:var(--bg2); border-top:1px solid var(--border); padding:48px
     <div class="instr-inner">
       <div class="sec-label">Instrument Support</div>
       <h2 class="sec-title">Every part of <em>your song</em></h2>
-      <div class="instr-grid">
+      <div class="instr-grid" style="grid-template-columns:repeat(4,1fr)">
+      <div style="display:none">placeholder</div>
         <div class="instr-card"><div class="instr-icon">🎸</div><div class="instr-name" style="color:var(--guitar)">Guitar</div></div>
         <div class="instr-card"><div class="instr-icon">🎸</div><div class="instr-name" style="color:var(--bass)">Bass</div></div>
         <div class="instr-card"><div class="instr-icon">🎹</div><div class="instr-name" style="color:var(--piano)">Piano</div></div>
         <div class="instr-card"><div class="instr-icon">🥁</div><div class="instr-name" style="color:var(--drums)">Drums</div></div>
-        <div class="instr-card"><div class="instr-icon">🎻</div><div class="instr-name" style="color:var(--violin)">Violin</div></div>
-        <div class="instr-card"><div class="instr-icon">🪕</div><div class="instr-name" style="color:var(--banjo)">Banjo</div></div>
+
+
       </div>
     </div>
   </div>
@@ -297,8 +344,8 @@ footer { background:var(--bg2); border-top:1px solid var(--border); padding:48px
       <div class="price-card">
         <div class="price-tier">Free Preview</div>
         <div class="price-amount"><sup>$</sup>0</div>
-        <div class="price-period">always free</div>
-        <ul class="price-features"><li>60-second preview</li><li>1 instrument</li><li>All notation formats</li><li>No card required</li></ul>
+        <div class="price-period">one time</div>
+        <ul class="price-features"><li>Single 60-sec preview</li><li>1 instrument</li><li>All notation formats</li><li>No card required</li></ul>
         <button class="price-btn" onclick="openModal('signup')">Get Started</button>
       </div>
       <div class="price-card">
@@ -355,17 +402,20 @@ footer { background:var(--bg2); border-top:1px solid var(--border); padding:48px
       <div class="song-list" id="song-list"><div style="font-size:13px;color:var(--muted);padding:12px 0;">No songs yet.</div></div>
       <div class="sidebar-bottom">
         <div class="plan-badge" id="plan-badge">FREE</div>
-        <div class="songs-remaining" id="songs-remaining">Unlimited 60-sec previews</div>
+        <div class="songs-remaining" id="songs-remaining">1 free preview remaining</div>
         <button class="upgrade-btn" onclick="showPage('landing');setTimeout(()=>jumpTo('pricing'),100)">Upgrade Plan</button>
       </div>
     </aside>
+
     <main class="app-main">
       <div class="analysis-form">
         <div class="form-title">Analyze New Song</div>
+
         <div class="method-tabs">
           <button class="method-tab active" onclick="switchMethod('url',this)">Paste URL</button>
           <button class="method-tab" onclick="switchMethod('upload',this)">Upload File</button>
         </div>
+
         <div id="input-url">
           <input type="text" class="url-input" id="song-url" placeholder="Paste any audio URL — Suno, Udio, SoundCloud, or any public link..." />
         </div>
@@ -376,21 +426,33 @@ footer { background:var(--bg2); border-top:1px solid var(--border); padding:48px
           </div>
           <input type="file" id="af" accept="audio/*" style="display:none" onchange="handleFile(event)" />
         </div>
-        <div style="margin-top:24px">
-          <div class="sidebar-sec" style="margin-bottom:12px">Select Instrument(s)</div>
-          <label class="all-row">
-            <input type="checkbox" id="all-chk" onchange="toggleAll(this)" />
-            <span class="all-label">All Instruments <span>— requires $10 single or $30/mo plan</span></span>
-          </label>
-          <div class="instr-picker">
-            <button class="ipbtn" style="--c:var(--guitar)" data-i="guitar" onclick="pickInstr(this)"><span class="ipdot"></span>🎸 Guitar</button>
-            <button class="ipbtn" style="--c:var(--bass)" data-i="bass" onclick="pickInstr(this)"><span class="ipdot"></span>🎸 Bass</button>
-            <button class="ipbtn" style="--c:var(--piano)" data-i="piano" onclick="pickInstr(this)"><span class="ipdot"></span>🎹 Piano</button>
-            <button class="ipbtn" style="--c:var(--drums)" data-i="drums" onclick="pickInstr(this)"><span class="ipdot"></span>🥁 Drums</button>
-            <button class="ipbtn" style="--c:var(--violin)" data-i="violin" onclick="pickInstr(this)"><span class="ipdot"></span>🎻 Violin</button>
-            <button class="ipbtn" style="--c:var(--banjo)" data-i="banjo" onclick="pickInstr(this)"><span class="ipdot"></span>🪕 Banjo</button>
+
+        <!-- INSTRUMENT SELECTION -->
+        <div class="instr-section">
+          <div class="instr-section-label">Select Instruments &amp; Notation Formats</div>
+
+          <!-- Main 4 -->
+          <div class="main-instrs" id="main-instrs"></div>
+
+          <!-- More instruments dropdown -->
+          <div class="more-instrs-wrap">
+            <button class="more-instrs-btn" id="more-btn" onclick="toggleMoreDropdown()">
+              <span>➕</span> More Instruments
+              <span class="arrow">▼</span>
+            </button>
+            <div class="more-instrs-dropdown" id="more-dropdown"></div>
           </div>
+
+          <!-- Extra instrument format blocks -->
+          <div class="extra-instr-blocks" id="extra-blocks"></div>
         </div>
+
+        <!-- Preview used warning -->
+        <div class="preview-used-banner" id="preview-used-banner">
+          <div class="pub-title">Free Preview Used</div>
+          <div class="pub-sub">You've used your one free preview. Purchase a plan below to analyze more songs.</div>
+        </div>
+
         <button class="run-btn" id="run-btn" onclick="runAnalysis()">▶ Analyze Song</button>
         <div class="prog-wrap" id="prog-wrap"><div class="prog-label" id="prog-lbl">Analyzing...</div><div class="prog-bar"><div class="prog-fill"></div></div></div>
         <div class="app-err" id="app-err"></div>
@@ -401,29 +463,21 @@ footer { background:var(--bg2); border-top:1px solid var(--border); padding:48px
         <div class="pw-title">Unlock Full Song</div>
         <div class="pw-sub">You've heard the preview. Ready to learn the whole thing?</div>
         <div class="pw-opts">
-          <div class="pw-opt" id="pw-5" onclick="checkout('price_1TEsBf2eFPfpFFw7vm84QFdL','single-1',this)">
-            <div class="pw-price">$5</div>
-            <div class="pw-label">This Song</div>
+          <div class="pw-opt" onclick="checkout('price_1TEsBf2eFPfpFFw7vm84QFdL',this)">
+            <div class="pw-price">$5</div><div class="pw-label">This Song</div>
             <div class="pw-desc">Full song, 1 instrument. One-time.</div>
-            <div class="pw-spinner" id="spin-5"></div>
           </div>
-          <div class="pw-opt pop" id="pw-10" onclick="checkout('price_1TEsCn2eFPfpFFw7eP7v6XiW','single-all',this)">
-            <div class="pw-price">$10</div>
-            <div class="pw-label">All Instruments</div>
+          <div class="pw-opt pop" onclick="checkout('price_1TEsCn2eFPfpFFw7eP7v6XiW',this)">
+            <div class="pw-price">$10</div><div class="pw-label">All Instruments</div>
             <div class="pw-desc">Full song, every instrument. One-time.</div>
-            <div class="pw-spinner" id="spin-10"></div>
           </div>
-          <div class="pw-opt" id="pw-15" onclick="checkout('price_1TEsGQ2eFPfpFFw7XQEBbPsL','sub-solo',this)">
-            <div class="pw-price">$15<span style="font-size:14px">/mo</span></div>
-            <div class="pw-label">Solo Plan</div>
+          <div class="pw-opt" onclick="checkout('price_1TEsGQ2eFPfpFFw7XQEBbPsL',this)">
+            <div class="pw-price">$15<span style="font-size:14px">/mo</span></div><div class="pw-label">Solo Plan</div>
             <div class="pw-desc">15 songs/month, 1 instrument each.</div>
-            <div class="pw-spinner" id="spin-15"></div>
           </div>
-          <div class="pw-opt" id="pw-30" onclick="checkout('price_1TEsOl2eFPfpFFw7n8rdGd3Y','sub-band',this)">
-            <div class="pw-price">$30<span style="font-size:14px">/mo</span></div>
-            <div class="pw-label">Full Band</div>
+          <div class="pw-opt" onclick="checkout('price_1TEsOl2eFPfpFFw7n8rdGd3Y',this)">
+            <div class="pw-price">$30<span style="font-size:14px">/mo</span></div><div class="pw-label">Full Band</div>
             <div class="pw-desc">15 songs/month, all instruments.</div>
-            <div class="pw-spinner" id="spin-30"></div>
           </div>
         </div>
         <div class="stripe-note">🔒 Secure checkout powered by Stripe · Test card: 4242 4242 4242 4242</div>
@@ -470,16 +524,29 @@ const SUPABASE_URL = 'https://bxotzqydejfixxugfpsb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_wfaLU_sfoePSCCzMSh7TAQ_IplLoYec';
 const STRIPE_KEY   = 'pk_test_51TEs3c2eFPfpFFw7P9emkZReVZsEFPw0Uz4Uo55QvBwRUYw9WlKLJGtRKKdH9T12wmqgVHBq2CkZ1IrUe7n3TykY00j8LqLCDu';
 
-// ── INIT ──
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 const stripe = Stripe(STRIPE_KEY);
 
+// ── INSTRUMENT DEFINITIONS ──
+const MAIN_INSTRS = [
+  { key:'guitar', icon:'🎸', label:'Guitar', color:'var(--guitar)', formats:['Sheet Music','Tab','Chord Chart'] },
+  { key:'bass',   icon:'🎸', label:'Bass',   color:'var(--bass)',   formats:['Sheet Music','Tab'] },
+  { key:'piano',  icon:'🎹', label:'Piano',  color:'var(--piano)',  formats:['Sheet Music','Chord Chart'] },
+  { key:'drums',  icon:'🥁', label:'Drums',  color:'var(--drums)',  formats:['Drum Notation'] },
+];
+const MORE_INSTRS = [
+  { key:'violin', icon:'🎻', label:'Violin', color:'var(--violin)', formats:['Sheet Music'] },
+  { key:'banjo',  icon:'🪕', label:'Banjo',  color:'var(--banjo)',  formats:['Sheet Music','Tab'] },
+];
+
 // ── STATE ──
 let user = null, authMode = 'login';
-let selInstrs = new Set(), allInstrs = false;
 let inputMethod = 'url', uploadedName = '';
-let songHistory = [];
+let songHistory = [], previewUsed = false;
+let activeInstrs = {}; // key -> Set of selected formats
+let moreDropOpen = false;
+let extraInstrs = new Set();
 
 const IMETA = {
   guitar:{icon:'🎸',color:'var(--guitar)',label:'Guitar'},
@@ -490,19 +557,147 @@ const IMETA = {
   banjo: {icon:'🪕',color:'var(--banjo)', label:'Banjo'},
 };
 
+// ── BUILD INSTRUMENT UI ──
+function buildInstrUI() {
+  // Main 4
+  const main = document.getElementById('main-instrs');
+  main.innerHTML = '';
+  MAIN_INSTRS.forEach(instr => {
+    const div = document.createElement('div');
+    div.className = 'instr-block';
+    div.id = 'ib-' + instr.key;
+    div.style.setProperty('--c', instr.color);
+    div.innerHTML = `
+      <div class="instr-block-header" onclick="toggleInstr('${instr.key}')">
+        <span class="instr-block-icon">${instr.icon}</span>
+        <span class="instr-block-name">${instr.label}</span>
+        <span class="instr-block-check"></span>
+      </div>
+      <div class="instr-formats" id="fmts-${instr.key}">
+        ${instr.formats.map(f => `<button class="fmt-btn" style="--c:${instr.color}" data-instr="${instr.key}" data-fmt="${f}" onclick="toggleFmt('${instr.key}','${f}',this)">${f}</button>`).join('')}
+      </div>`;
+    main.appendChild(div);
+  });
+
+  // More dropdown
+  const dd = document.getElementById('more-dropdown');
+  dd.innerHTML = '';
+  MORE_INSTRS.forEach(instr => {
+    const div = document.createElement('div');
+    div.className = 'more-instr-item';
+    div.id = 'mi-' + instr.key;
+    div.style.setProperty('--c', instr.color);
+    div.innerHTML = `
+      <span class="more-instr-item-icon">${instr.icon}</span>
+      <span class="more-instr-item-name">${instr.label}</span>
+      <span class="more-instr-check"></span>`;
+    div.onclick = () => toggleExtraInstr(instr.key);
+    dd.appendChild(div);
+  });
+}
+
+function toggleInstr(key) {
+  const block = document.getElementById('ib-' + key);
+  if (block.classList.contains('active')) {
+    block.classList.remove('active');
+    delete activeInstrs[key];
+  } else {
+    block.classList.add('active');
+    const instr = MAIN_INSTRS.find(i => i.key === key);
+    // Auto-select all formats, or first if drums (only one)
+    activeInstrs[key] = new Set(instr.formats);
+    // Auto-select all fmt buttons
+    block.querySelectorAll('.fmt-btn').forEach(b => b.classList.add('sel'));
+  }
+}
+
+function toggleFmt(key, fmt, btn) {
+  if (!activeInstrs[key]) return;
+  if (activeInstrs[key].has(fmt)) {
+    activeInstrs[key].delete(fmt);
+    btn.classList.remove('sel');
+    // If no formats left, deactivate instrument
+    if (activeInstrs[key].size === 0) {
+      delete activeInstrs[key];
+      document.getElementById('ib-' + key).classList.remove('active');
+    }
+  } else {
+    activeInstrs[key].add(fmt);
+    btn.classList.add('sel');
+  }
+}
+
+function toggleMoreDropdown() {
+  moreDropOpen = !moreDropOpen;
+  document.getElementById('more-dropdown').classList.toggle('open', moreDropOpen);
+  document.getElementById('more-btn').classList.toggle('open', moreDropOpen);
+}
+
+function toggleExtraInstr(key) {
+  const item = document.getElementById('mi-' + key);
+  const instr = MORE_INSTRS.find(i => i.key === key);
+  if (extraInstrs.has(key)) {
+    extraInstrs.delete(key);
+    item.classList.remove('selected');
+    delete activeInstrs[key];
+    renderExtraBlocks();
+  } else {
+    extraInstrs.add(key);
+    item.classList.add('selected');
+    activeInstrs[key] = new Set(instr.formats);
+    renderExtraBlocks();
+  }
+}
+
+function renderExtraBlocks() {
+  const container = document.getElementById('extra-blocks');
+  container.innerHTML = '';
+  extraInstrs.forEach(key => {
+    const instr = MORE_INSTRS.find(i => i.key === key);
+    if (!instr) return;
+    const div = document.createElement('div');
+    div.className = 'instr-block active';
+    div.style.setProperty('--c', instr.color);
+    div.innerHTML = `
+      <div class="instr-block-header" onclick="toggleExtraInstr('${key}')">
+        <span class="instr-block-icon">${instr.icon}</span>
+        <span class="instr-block-name">${instr.label}</span>
+        <span class="instr-block-check"></span>
+      </div>
+      <div class="instr-formats" id="fmts-${key}">
+        ${instr.formats.map(f => `<button class="fmt-btn ${activeInstrs[key]?.has(f)?'sel':''}" style="--c:${instr.color}" data-instr="${key}" data-fmt="${f}" onclick="toggleFmt('${key}','${f}',this)">${f}</button>`).join('')}
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
 // ── AUTH LISTENER ──
 sb.auth.onAuthStateChange(async (event, session) => {
   if (session?.user) {
     user = session.user;
     updateNav();
-    if (event === 'SIGNED_IN') { closeModal(); showPage('app'); await loadSongs(); }
+    if (event === 'SIGNED_IN') { closeModal(); showPage('app'); await loadSongs(); checkPreviewUsed(); }
   } else { user = null; updateNav(); }
 });
 
 (async () => {
   const { data: { session } } = await sb.auth.getSession();
-  if (session?.user) { user = session.user; updateNav(); }
+  if (session?.user) { user = session.user; updateNav(); checkPreviewUsed(); }
 })();
+
+// ── PREVIEW TRACKING ──
+async function checkPreviewUsed() {
+  if (!user) return;
+  const { data } = await sb.from('songs').select('id').eq('user_id', user.id).limit(1);
+  previewUsed = data && data.length > 0;
+  updatePreviewUI();
+}
+
+function updatePreviewUI() {
+  document.getElementById('preview-used-banner').classList.toggle('show', previewUsed);
+  document.getElementById('songs-remaining').textContent = previewUsed ? 'Free preview used — upgrade to continue' : '1 free preview remaining';
+  document.getElementById('run-btn').disabled = previewUsed;
+}
 
 // ── ROUTING ──
 function showPage(n) { document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById('page-'+n).classList.add('active'); window.scrollTo(0,0); }
@@ -517,7 +712,7 @@ function updateNav() {
   document.getElementById('n-logout').style.display=on?'':'none';
   if(on) document.getElementById('sb-user').textContent=user.user_metadata?.full_name||user.email?.split('@')[0]||'Musician';
 }
-async function logout() { await sb.auth.signOut(); user=null; songHistory=[]; updateNav(); showPage('landing'); }
+async function logout() { await sb.auth.signOut(); user=null; songHistory=[]; previewUsed=false; updateNav(); showPage('landing'); }
 
 // ── AUTH MODAL ──
 function openModal(mode) { authMode=mode==='signup'?'signup':'login'; updateModalMode(); document.getElementById('modal-err').classList.remove('show'); document.getElementById('modal-ok').classList.remove('show'); document.getElementById('auth-modal').classList.add('open'); }
@@ -531,75 +726,17 @@ function updateModalMode() {
 }
 function showModalErr(m){const e=document.getElementById('modal-err');e.textContent=m;e.classList.add('show');}
 function showModalOk(m){const e=document.getElementById('modal-ok');e.textContent=m;e.classList.add('show');}
-
-async function googleLogin() {
-  const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href}});
-  if(error) showModalErr(error.message);
-}
+async function googleLogin() { const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href}}); if(error)showModalErr(error.message); }
 async function handleAuth() {
   const email=document.getElementById('auth-email').value.trim();
   const pass=document.getElementById('auth-pass').value;
   if(!email||!pass){showModalErr('Please fill in all fields.');return;}
-  const btn=document.getElementById('auth-submit');
-  btn.textContent='Please wait...'; btn.disabled=true;
+  const btn=document.getElementById('auth-submit'); btn.textContent='Please wait...'; btn.disabled=true;
   let error;
-  if(authMode==='signup'){
-    const r=await sb.auth.signUp({email,password:pass}); error=r.error;
-    if(!error){showModalOk('Account created! Check your email to confirm, then sign in.');btn.textContent='Create Account';btn.disabled=false;return;}
-  } else {
-    const r=await sb.auth.signInWithPassword({email,password:pass}); error=r.error;
-  }
-  btn.textContent=authMode==='login'?'Sign In':'Create Account'; btn.disabled=false;
-  if(error) showModalErr(error.message);
-}
-
-// ── STRIPE CHECKOUT ──
-async function checkout(priceId, planType, el) {
-  if(!user){openModal('signup');return;}
-  const spinId='spin-'+el.querySelector('.pw-price').textContent.replace(/[^0-9]/g,'');
-  const spin=el.querySelector('.pw-spinner');
-  if(spin) spin.style.display='block';
-  el.style.pointerEvents='none';
-
-  try {
-    // Stripe Checkout requires a backend to create a session securely.
-    // For now we redirect to Stripe Payment Links which work without a backend.
-    // Replace these URLs with your actual Stripe Payment Links from your dashboard.
-    const paymentLinks = {
-      'price_1TEsBf2eFPfpFFw7vm84QFdL': 'https://buy.stripe.com/test_9B614gaJ79kX7bT6lB1gs01',
-      'price_1TEsCn2eFPfpFFw7eP7v6XiW': 'https://buy.stripe.com/test_8x26oA18xgNp3ZH39p1gs02',
-      'price_1TEsGQ2eFPfpFFw7XQEBbPsL': 'https://buy.stripe.com/test_4gM4gseZn68L7bT7pF1gs03',
-      'price_1TEsOl2eFPfpFFw7n8rdGd3Y': 'https://buy.stripe.com/test_fZu6oA5o54H8fX5hx1gs04',
-    };
-
-    const link = paymentLinks[priceId];
-    if(link && !link.includes('your_link')) {
-      window.location.href = link + '?prefilled_email=' + encodeURIComponent(user.email);
-    } else {
-      // Fallback: show instructions to set up payment links
-      if(spin) spin.style.display='none';
-      el.style.pointerEvents='';
-      showStripeSetupNote(planType);
-    }
-  } catch(err) {
-    if(spin) spin.style.display='none';
-    el.style.pointerEvents='';
-    showAppErr('Payment error: ' + err.message);
-  }
-}
-
-function showStripeSetupNote(plan) {
-  document.getElementById('app-err').classList.remove('show');
-  const note = document.createElement('div');
-  note.style.cssText='background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);border-radius:8px;padding:20px;margin-top:16px;font-size:13px;color:var(--gold2);line-height:1.7;';
-  note.innerHTML=`<strong style="color:var(--gold)">One more step to activate payments:</strong><br><br>
-  In your Stripe dashboard, go to <strong>Payment Links</strong> and create a link for each product. Then paste the link URLs into the <code>paymentLinks</code> object in the app code.<br><br>
-  <span style="color:var(--muted)">This is the final step before your app accepts real payments.</span>`;
-  const pw=document.getElementById('pw-card');
-  const existing=pw.querySelector('.setup-note');
-  if(existing) existing.remove();
-  note.className='setup-note';
-  pw.appendChild(note);
+  if(authMode==='signup'){const r=await sb.auth.signUp({email,password:pass});error=r.error;if(!error){showModalOk('Account created! Check your email to confirm, then sign in.');btn.textContent='Create Account';btn.disabled=false;return;}}
+  else{const r=await sb.auth.signInWithPassword({email,password:pass});error=r.error;}
+  btn.textContent=authMode==='login'?'Sign In':'Create Account';btn.disabled=false;
+  if(error)showModalErr(error.message);
 }
 
 // ── INPUT ──
@@ -610,77 +747,128 @@ dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');}
 dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
 dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');const f=e.dataTransfer.files[0];if(f){uploadedName=f.name;document.getElementById('drop-text').innerHTML=`<strong>${f.name}</strong>`;dz.style.borderColor='var(--gold)';}});
 
-// ── INSTRUMENT SELECTION ──
-function pickInstr(btn){if(allInstrs)return;const i=btn.dataset.i;if(btn.classList.contains('sel')){btn.classList.remove('sel');selInstrs.delete(i);}else{document.querySelectorAll('.ipbtn').forEach(b=>b.classList.remove('sel'));selInstrs.clear();btn.classList.add('sel');selInstrs.add(i);}}
-function toggleAll(cb){allInstrs=cb.checked;document.querySelectorAll('.ipbtn').forEach(b=>{b.style.opacity=allInstrs?'0.4':'1';b.style.pointerEvents=allInstrs?'none':'';if(allInstrs)b.classList.remove('sel');});if(allInstrs)selInstrs.clear();}
+// ── STRIPE CHECKOUT ──
+async function checkout(priceId, el) {
+  if(!user){openModal('signup');return;}
+  const paymentLinks = {
+    'price_1TEsBf2eFPfpFFw7vm84QFdL': 'https://buy.stripe.com/test_9B614gaJ79kX7bT6lB1gs01',
+    'price_1TEsCn2eFPfpFFw7eP7v6XiW': 'https://buy.stripe.com/test_8x26oA18xgNp3ZH39p1gs02',
+    'price_1TEsGQ2eFPfpFFw7XQEBbPsL': 'https://buy.stripe.com/test_4gM4gseZn68L7bT7pF1gs03',
+    'price_1TEsOl2eFPfpFFw7n8rdGd3Y': 'https://buy.stripe.com/test_fZu6oA5oN54H8fX5hx1gs04',
+  };
+  const link = paymentLinks[priceId];
+  if(link) window.location.href = link + '?prefilled_email=' + encodeURIComponent(user.email);
+}
 
 // ── ANALYSIS ──
-async function runAnalysis(){
+async function runAnalysis() {
   if(!user){openModal('signup');return;}
+  if(previewUsed){document.getElementById('pw-card').classList.add('show');document.getElementById('pw-card').scrollIntoView({behavior:'smooth'});return;}
   const url=document.getElementById('song-url').value.trim();
   const hasInput=inputMethod==='url'?url:uploadedName;
   if(!hasInput){showAppErr('Please paste a URL or upload an audio file.');return;}
-  if(!allInstrs&&selInstrs.size===0){showAppErr('Please select at least one instrument.');return;}
-  const instrList=allInstrs?'guitar, bass, piano, drums, violin, banjo':[...selInstrs].join(', ');
-  setRunning(true);setProgress(true,'Fetching song data...');
+  if(Object.keys(activeInstrs).length===0){showAppErr('Please select at least one instrument.');return;}
+
+  // Build instrument + format request
+  const instrRequests = Object.entries(activeInstrs).map(([key, fmts]) => `${key} (${[...fmts].join(', ')})`).join('; ');
+  const instrKeys = Object.keys(activeInstrs).join(', ');
+
+  setRunning(true); setProgress(true,'Fetching song data...');
   document.getElementById('res-wrap').classList.remove('show');
   document.getElementById('pw-card').classList.remove('show');
   clearAppErr();
+
   const ref=inputMethod==='url'?`this URL: ${url}`:`this audio file: ${uploadedName}`;
-  const prompt=`You are a professional music transcriptionist. The user has an AI-generated song from ${ref}.
+
+  // Build format instructions per instrument
+  const fmtInstructions = Object.entries(activeInstrs).map(([key, fmts]) => {
+    const lines = [];
+    if(fmts.has('Sheet Music')) lines.push('- standard: note-by-note notation with measure numbers, note names+octave (C4 D#4), rhythmic values. First 8 bars only.');
+    if(fmts.has('Tab')) lines.push('- tabs: ASCII tab notation (6-string for guitar, 4-string for bass). First 8 bars only.');
+    if(fmts.has('Chord Chart')) lines.push('- chords: chord chart with bar numbers and chord symbols (Am, G, C/E). First 8 bars only.');
+    if(fmts.has('Drum Notation')) lines.push('- drum: BD/SD/HH/OH/CY/TT grid, 16th-note subdivisions, 1 bar per line. First 8 bars only.');
+    return `${key}:\n${lines.join('\n')}`;
+  }).join('\n\n');
+
+  const prompt = `You are a professional music transcriptionist. The user has an AI-generated song from ${ref}.
+
 Based on available metadata, URL context, filename, style cues, or reasonable inference:
 1. Identify or name the song, infer genre/style, key, time signature, BPM, mood.
-2. For each instrument — ${instrList} — write detailed playable notation for the first 8 bars (free preview).
-For each provide:
-- standard: note-by-note with measure numbers, note names+octave (C4, D#4), rhythmic values
-- tabs: ASCII tab (6-string guitar, 4-string bass, N/A for others)
-- chords: chord chart with bar numbers and symbols
-- drum: BD/SD/HH/OH/CY/TT grid, 16th-note subdivisions, 1 bar per line
-Return ONLY raw JSON (no markdown):
-{"song":{"title":"...","style":"...","key":"...","timeSignature":"4/4","bpm":"...","mood":"..."},"instruments":{"guitar":{"description":"...","standard":"...","tabs":"...","chords":"...","drum":"N/A"},"bass":{"description":"...","standard":"...","tabs":"...","chords":"...","drum":"N/A"},"piano":{"description":"...","standard":"...","tabs":"N/A","chords":"...","drum":"N/A"},"drums":{"description":"...","standard":"N/A","tabs":"N/A","chords":"N/A","drum":"..."},"violin":{"description":"...","standard":"...","tabs":"N/A","chords":"...","drum":"N/A"},"banjo":{"description":"...","standard":"...","tabs":"...","chords":"...","drum":"N/A"}}}
-Only include instruments from: ${instrList}.`;
-  try{
+2. This is a FREE PREVIEW — provide notation for the FIRST 8 BARS ONLY regardless of song length.
+3. For each instrument provide ONLY the requested formats:
+
+${fmtInstructions}
+
+For any format not requested for an instrument, use "N/A".
+
+Return ONLY raw JSON (no markdown, no backticks):
+{
+  "song":{"title":"...","style":"...","key":"...","timeSignature":"4/4","bpm":"...","mood":"..."},
+  "instruments":{
+    ${Object.keys(activeInstrs).map(k=>`"${k}":{"description":"...","standard":"...","tabs":"...","chords":"...","drum":"..."}`).join(',\n    ')}
+  }
+}
+Only include these instruments: ${instrKeys}.`;
+
+  try {
     setProgress(true,'Generating notation with AI...');
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,messages:[{role:'user',content:prompt}]})});
-    const data=await res.json();
-    if(data.error)throw new Error(data.error.message);
-    const result=JSON.parse(data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim());
+    // Call via Netlify Function proxy to avoid CORS
+    const res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        messages: [{role:'user', content:prompt}]
+      })
+    });
+    const data = await res.json();
+    if(data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+    const result = JSON.parse(data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim());
     setProgress(false);
-    renderResults(result,url||uploadedName);
-    await saveSong(result.song,instrList);
-  }catch(err){setProgress(false);showAppErr('Analysis failed: '+err.message);}
-  finally{setRunning(false);}
+    renderResults(result, url||uploadedName);
+    await saveSong(result.song, instrKeys);
+    previewUsed = true;
+    updatePreviewUI();
+  } catch(err) {
+    setProgress(false);
+    showAppErr('Analysis failed: ' + err.message);
+  } finally { setRunning(false); }
 }
 
 // ── RENDER ──
-function renderResults(data,ref){
+function renderResults(data, ref) {
   const s=data.song;
   document.getElementById('res-title').textContent=s.title||ref||'Your Song';
   document.getElementById('res-meta').textContent=s.style||'';
   document.getElementById('res-chips').innerHTML=[{k:'KEY',v:s.key},{k:'TIME',v:s.timeSignature},{k:'BPM',v:s.bpm},{k:'MOOD',v:s.mood}].map(c=>`<div class="chip"><span style="font-size:10px;color:var(--muted)">${c.k}&nbsp;</span><strong>${c.v||'—'}</strong></div>`).join('');
+
   document.getElementById('prev-banner-wrap').innerHTML=`<div class="prev-banner"><span>🎵 <strong>60-Second Preview</strong> — First 8 bars shown. Unlock the full song below.</span><button class="unlock-btn" onclick="document.getElementById('pw-card').classList.add('show');document.getElementById('pw-card').scrollIntoView({behavior:'smooth'})">Unlock Full Song</button></div>`;
-  const c=document.getElementById('irc-container');c.innerHTML='';
-  ['guitar','bass','piano','drums','violin','banjo'].forEach(key=>{
-    if(!data.instruments?.[key])return;
-    const instr=data.instruments[key],meta=IMETA[key];
-    const fmts={standard:{label:'NOTATION',v:instr.standard},tabs:{label:'TABS',v:instr.tabs},chords:{label:'CHORDS',v:instr.chords},drum:{label:'DRUM GRID',v:instr.drum}};
+
+  const c=document.getElementById('irc-container'); c.innerHTML='';
+  Object.keys(activeInstrs).forEach(key => {
+    if(!data.instruments?.[key]) return;
+    const instr=data.instruments[key], meta=IMETA[key];
+    const fmts={standard:{label:'SHEET MUSIC',v:instr.standard},tabs:{label:'TABS',v:instr.tabs},chords:{label:'CHORDS',v:instr.chords},drum:{label:'DRUM NOTATION',v:instr.drum}};
     const avail=Object.entries(fmts).filter(([,f])=>f.v&&f.v!=='N/A'&&f.v.length>3);
-    if(!avail.length)return;
-    const el=document.createElement('div');el.className='irc';
+    if(!avail.length) return;
+    const el=document.createElement('div'); el.className='irc';
     el.innerHTML=`<div class="irc-hd" onclick="tgIRC('${key}')"><div class="irc-bar" style="background:${meta.color}"></div><div class="irc-ico">${meta.icon}</div><div class="irc-inf"><div class="irc-name" style="color:${meta.color}">${meta.label}</div><div class="irc-dsc">${instr.description||''}</div></div><div class="irc-chev open" id="chev-${key}">▼</div></div><div class="irc-bd open" id="bd-${key}">${mkWave(meta.color)}<div class="ntabs">${avail.map(([k,f],i)=>`<button class="ntab ${i===0?'active':''}" onclick="swNT('${key}','${k}',this)">${f.label}</button>`).join('')}</div>${avail.map(([k,f],i)=>`<div class="notation" id="nd-${key}-${k}" style="display:${i===0?'block':'none'}">${esc(f.v)}</div>`).join('')}<button class="copy-nd" onclick="cpND('${key}','${avail[0][0]}',this)">⎘ Copy notation</button></div>`;
     c.appendChild(el);
   });
+
   document.getElementById('res-wrap').classList.add('show');
   document.getElementById('pw-card').classList.add('show');
   document.getElementById('res-wrap').scrollIntoView({behavior:'smooth'});
 }
+
 function mkWave(color){return `<div class="mini-wave">${Array.from({length:50},(_,i)=>`<div class="mwb" style="height:${6+Math.random()*28}px;background:${color};animation-delay:${(i*0.05).toFixed(2)}s;animation-duration:${(0.7+Math.random()*0.8).toFixed(2)}s"></div>`).join('')}</div>`;}
 function tgIRC(k){document.getElementById('bd-'+k).classList.toggle('open');document.getElementById('chev-'+k).classList.toggle('open');}
 function swNT(k,fmt,btn){const bd=document.getElementById('bd-'+k);bd.querySelectorAll('.notation').forEach(e=>e.style.display='none');bd.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));const nd=document.getElementById(`nd-${k}-${fmt}`);if(nd)nd.style.display='block';btn.classList.add('active');const cb=bd.querySelector('.copy-nd');if(cb)cb.setAttribute('onclick',`cpND('${k}','${fmt}',this)`);}
 function cpND(k,fmt,btn){const el=document.getElementById(`nd-${k}-${fmt}`);if(!el)return;navigator.clipboard.writeText(el.textContent).then(()=>{const o=btn.innerHTML;btn.innerHTML='✓ Copied!';btn.style.color='var(--gold)';setTimeout(()=>{btn.innerHTML=o;btn.style.color='';},2000);});}
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-// ── SUPABASE SONGS ──
+// ── SUPABASE ──
 async function saveSong(song,instrs){
   if(!user)return;
   const {data,error}=await sb.from('songs').insert({user_id:user.id,title:song.title||'Untitled',instrs,style:song.style||'',is_preview:true}).select();
@@ -702,6 +890,8 @@ function setProgress(on,lbl){const p=document.getElementById('prog-wrap');p.clas
 function showAppErr(m){const e=document.getElementById('app-err');e.textContent=m;e.classList.add('show');}
 function clearAppErr(){document.getElementById('app-err').classList.remove('show');}
 
+// ── INIT ──
+buildInstrUI();
 updateNav();
 </script>
 </body>
